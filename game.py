@@ -13,7 +13,7 @@ def minimax(game_state, alpha, beta, depth_bound):
 	global total_branches
 	global static_eval_count
 	global cutoffs
-	if depth_bound == 4:
+	if depth_bound == 3:
 		static_eval_count += 1
 		return (game_state.static_evaluation(), None) 	# it is irrelevant what we return int second slot
 	elif game_state.current_player == 0:	# i.e is AI turn (max node)
@@ -93,11 +93,11 @@ class Game:
 		if ending_pos[0] not in range(self.board_size) or ending_pos[1] not in range(self.board_size):	# Discard any generated moves that fall off of the board
 			return False 
 		if self.board.repr[starting_pos[0]][starting_pos[1]]!=self.player_symbol[current_player]:
-			print "this should never trigger and is redundant"
+			print("this should never trigger and is redundant")
 			return False
 		if self.board.repr[ending_pos[0]][ending_pos[1]]!= '.':	# Check that landing spot is empty
 			return False
-		middle_pos = (starting_pos[0]-(starting_pos[0]-ending_pos[0])/2,starting_pos[1]-(starting_pos[1]-ending_pos[1])/2)	# Check the middle spot is the other piece - this should in theory not matter because the pieces alternate
+		middle_pos = (starting_pos[0]-(starting_pos[0]-ending_pos[0])//2,starting_pos[1]-(starting_pos[1]-ending_pos[1])//2)	# Check the middle spot is the other piece - this should in theory not matter because the pieces alternate
 		other_player = 1 - current_player 
 		if self.board.repr[middle_pos[0]][middle_pos[1]] != self.player_symbol[other_player]:
 			return False 
@@ -111,17 +111,17 @@ class Game:
 			successors.append(Game(self.board_size, boardCopy, 1-self.current_player, move))
 		for s in successors:
 			if False:
-				print s.board
+				print(s.board)
 		return successors
 
 	def player_turn(self):
 		try:
 			legal_moves = self.get_legal_moves(self.current_player)
-			print legal_moves
+			print(legal_moves)
 			if len(legal_moves) != 0:
 				is_valid_input = False
 				while is_valid_input == False:
-					move_coordinates = (input("Please enter start coordinate: "), input("Please enter end coordinate: "))	# should be two tuples entered
+					move_coordinates = (eval(input("Please enter start coordinate: ")), eval(input("Please enter end coordinate: ")))	# should be two tuples entered
 					actual_move_coordinates = ((move_coordinates[0][0]-1, move_coordinates[0][1]-1), (move_coordinates[1][0]-1, move_coordinates[1][1]-1))	# to convert user input (which is 1 indexed) to 0 indexed (which our board representation is in)
 					is_valid_input =  actual_move_coordinates in legal_moves
 				self.board.movePiece(actual_move_coordinates[0], actual_move_coordinates[1])
@@ -130,11 +130,11 @@ class Game:
 				self.current_player = 1 - self.current_player
 			else:
 				self.endgame = 1
-				print "Player", self.player_symbol[self.current_player], "loses!"
+				print("Player", self.player_symbol[self.current_player], "loses!")
 		except KeyboardInterrupt:
 			raise
 		except:
-			print "You messed up, you dingus"
+			print("You messed up, you dingus")
 			self.player_turn()
 
 	def computer_turn(self):
@@ -142,24 +142,24 @@ class Game:
 		if len(self.get_legal_moves(self.current_player)) != 0:
 			computer_move = minimax(self, float("-inf"), float("inf"), 0)
 			computer_move = computer_move[1]
-			print "FROM BOARD:"
-			print self.board
+			print("FROM BOARD:")
+			print(self.board)
 			if computer_move is not None:
 				self.board.movePiece(computer_move[0], computer_move[1])
 				print(self.board)
-				print "Made move: ", ((computer_move[0][0]+1, computer_move[0][1]+1), (computer_move[1][0]+1, computer_move[1][1]+1))
+				print("Made move: ", ((computer_move[0][0]+1, computer_move[0][1]+1), (computer_move[1][0]+1, computer_move[1][1]+1)))
 				self.last_move_made = computer_move
 				self.current_player = 1 - self.current_player
 			else:
 				random_move =  random.choice(self.get_legal_moves(self.current_player))
 				self.board.movePiece(random_move[0], random_move[1])
 				print(self.board)
-				print "Made move: ", ((random_move[0][0]+1, random_move[0][1]+1), (random_move[1][0]+1, random_move[1][1]+1))	# to present the computer's move nicely to player
+				print("Made move: ", ((random_move[0][0]+1, random_move[0][1]+1), (random_move[1][0]+1, random_move[1][1]+1)))	# to present the computer's move nicely to player)
 				self.last_move_made = computer_move
 				self.current_player = 1 - self.current_player
 		else:
 			self.endgame = 1
-			print "Player", self.player_symbol[self.current_player], "loses!"
+			print("Player", self.player_symbol[self.current_player], "loses!")
 
 	@staticmethod
 	def north_move(pos):
@@ -187,23 +187,23 @@ class Game:
 		return len(my_moves) - len(opponent_moves)
 
 def play_game(game_state):
-	print game_state.board
-	to_remove = input("x remove a piece: ")
+	print(game_state.board)
+	to_remove = eval(input("x remove a piece: "))
 	game_state.board.removePiece((to_remove[0]-1,to_remove[1]-1))
-	print game_state.board
-	to_remove = input("o remove a piece: ")
+	print(game_state.board)
+	to_remove = eval(input("o remove a piece: "))
 	game_state.board.removePiece((to_remove[0]-1,to_remove[1]-1))
 	while game_state.endgame != 1:
 		if game_state.current_player == 0:
-			game_state.computer_turn()
+			game_state.player_turn()
 		else:
 			game_state.computer_turn()
 
 def test_game(game_state):
 	game_state.board.removePiece((3,3))
-	print game_state.board
+	print(game_state.board)
 	game_state.board.removePiece((3,2))
-	print game_state.board
+	print(game_state.board)
 	while game_state.endgame != 1:
 		if game_state.current_player == 0:
 			game_state.computer_turn()
@@ -213,8 +213,8 @@ def test_game(game_state):
 
 if __name__ == '__main__':
 	start = time.time()
-	test_game(Game(8,Board(8)))
-	print "GAME TOOK", time.time() - start, "SECONDS"
-	print "NUM STATIC EVALS:", static_eval_count
-	print "AVG BRANCHING FACTOR:", total_branches/(minimax_calls+0.0)
-	print "NUM CUTOFFS", cutoffs
+	play_game(Game(8,Board(8)))
+	print("GAME TOOK", time.time() - start, "SECONDS")
+	print("NUM STATIC EVALS:", static_eval_count)
+	print("AVG BRANCHING FACTOR:", total_branches/(minimax_calls+0.0))
+	print("NUM CUTOFFS", cutoffs)
